@@ -1,14 +1,11 @@
 
 import java.io.IOException;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import javax.swing.JOptionPane;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -23,43 +20,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class ClasseMain {
 	public static void main(String[] args) throws IOException {
 
-		Client client = ClientBuilder.newClient();
-
-		WebTarget webTarget = client.target("http://localhost:8080/HomeService");
-
-		WebTarget pathdWebTarget = webTarget.path("sensor");
-		WebTarget pathdWebTargetQuery = pathdWebTarget.queryParam("sensorId", 1);
-
-		Invocation.Builder invocationBuilder = 
-				pathdWebTargetQuery.request(MediaType.APPLICATION_JSON_TYPE);
-
-		Response response = invocationBuilder.get();
-
-		String resp = response.readEntity(String.class);
+                int pergunta;
+                List<Integer> numeros = new ArrayList<>();
+                numeros.add(1);
+                numeros.add(1);
+		numeros.add(1);
+		numeros.add(1);
+		numeros.add(2);
+            
 		
-		ObjectMapper mapper = new ObjectMapper();
-		
-		SensorAnswer sa = mapper.readValue(resp, SensorAnswer.class);
-
-		System.out.println(sa.getValue());
-		
-		client = ClientBuilder.newClient();
-
-		webTarget = client.target("http://localhost:8080/HomeService/");
-
-		pathdWebTarget = webTarget.path("sensor");
-		pathdWebTargetQuery = pathdWebTarget.queryParam("sensorId", 2);
-
-		invocationBuilder = pathdWebTargetQuery.request(MediaType.APPLICATION_JSON_TYPE);
-
-		response = invocationBuilder.get();
-
-		resp = response.readEntity(String.class);
-		
-		sa = mapper.readValue(resp, SensorAnswer.class);
-
-		System.out.println(sa.getValue());
-		
+                ProtocoloDeEnvio p = new ProtocoloDeEnvio(numeros);
+                p.start();
+                while(true){
+                    pergunta = Integer.parseInt(JOptionPane.showInputDialog("Digite um número:"));
+                    if(pergunta < 0 || pergunta > 5){
+                        continue;
+                    }
+                    
+                    p.adicionarComandoEnvio(pergunta);
+                    p.enviaPedidos();
+                }
+                    
+                
 	}
 
 }
