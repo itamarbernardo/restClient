@@ -28,20 +28,19 @@ public class ClasseMain {
         numeros.add(1);
         numeros.add(2);
 
-        ProtocoloDeEnvio p = new ProtocoloDeEnvio(numeros);
-        p.start();
-        
-        ProtocoloActions p2 = new ProtocoloActions();
-        p2.start();
-        
+        ProtocoloDeEnvio protocoloEnvio = new ProtocoloDeEnvio(numeros);
+        protocoloEnvio.start();
+
+        ProtocoloActions protocoloAction = new ProtocoloActions();
+        protocoloAction.start();
+
         while (true) {
-        pergunta = Integer.parseInt(JOptionPane.showInputDialog("Digite um número:"));
-                    if(pergunta < 0 || pergunta > 5){
-                        continue;
-                    }
-        
-            p2.adicionarComandoEnvio(pergunta);
-           
+            pergunta = Integer.parseInt(JOptionPane.showInputDialog("Digite um número:"));
+            if (pergunta < 0 || pergunta > 5) {
+                continue;
+            }
+            
+            protocoloAction.adicionarComandoEnvio(pergunta);
 
         }
     }

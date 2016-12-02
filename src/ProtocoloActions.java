@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Invocation;
@@ -17,19 +19,15 @@ import javax.ws.rs.core.Response;
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author corona
  */
-public class ProtocoloActions extends Thread{
-    
-     private List<Integer> pedidos;
+public class ProtocoloActions extends Thread {
+
     private Queue<Integer> fila;
 
     public ProtocoloActions() {
-        this.pedidos = new ArrayList<>();
-        this.pedidos = pedidos;
         this.fila = new LinkedList<Integer>();
     }
 
@@ -45,32 +43,33 @@ public class ProtocoloActions extends Thread{
         this.fila = fila;
     }
 
-     @Override
+    @Override
     public void run() {
+        System.out.println("Chegou aqui!");
         enviaPedidos();
     }
 
     public void enviaPedidos() {
 
         while (true) {
-            if (this.fila.size() == 0) {
-                continue;
-            } else {
+            //System.out.println("Entrou no while");
+            if (this.fila.size() != 0) {
+                //System.out.println("Inseriu elemento");
                 try {
                     Client client = ClientBuilder.newClient();
 
                     WebTarget webTarget = client.target("http://localhost:8084/HomeService");
-
+//System.out.println("1");
                     WebTarget pathdWebTarget = webTarget.path("sensor");
                     WebTarget pathdWebTargetQuery = pathdWebTarget.queryParam("sensorId", this.fila.poll());
-
+//System.out.println("2");
                     Invocation.Builder invocationBuilder
                             = pathdWebTargetQuery.request(MediaType.APPLICATION_JSON_TYPE);
-
+//System.out.println("3");
                     Response response = invocationBuilder.get();
 
                     String resp = response.readEntity(String.class);
-
+//System.out.println("4");
                     ObjectMapper mapper = new ObjectMapper();
 
                     SensorAnswer sa;
@@ -79,18 +78,21 @@ public class ProtocoloActions extends Thread{
 
                     System.out.println(sa.getValue());
 
-//                    try {
-//                        Thread.sleep(500);
-//                    } catch (InterruptedException ex) {
-//                        ex.printStackTrace();
-//                    }
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
 
             }
+            else{
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                
+            }
         }
 
     }
-    
+
 }

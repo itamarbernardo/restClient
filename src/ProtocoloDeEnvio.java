@@ -27,24 +27,11 @@ public class ProtocoloDeEnvio extends Thread {
 
 //    private int valorEnvio = 0;
     private List<Integer> pedidos;
-    private Queue<Integer> fila;
-
+    
     public ProtocoloDeEnvio(List<Integer> pedidos) {
         this.pedidos = new ArrayList<>();
         this.pedidos = pedidos;
-        this.fila = new LinkedList<Integer>();
-    }
-
-    public synchronized void adicionarComandoEnvio(int valorEnvio) {
-        this.fila.offer(valorEnvio);
-    }
-
-    public synchronized Queue<Integer> getFila() {
-        return fila;
-    }
-
-    public synchronized void setFila(Queue<Integer> fila) {
-        this.fila = fila;
+        
     }
 
     @Override
@@ -55,7 +42,7 @@ public class ProtocoloDeEnvio extends Thread {
     public void enviaPedidos() {
 
         while (true) {
-            if (this.fila.size() == 0) {
+           
                 for (Integer p : pedidos) {
                     try {
                         Client client = ClientBuilder.newClient();
@@ -95,42 +82,8 @@ public class ProtocoloDeEnvio extends Thread {
                         ex.printStackTrace();
                     }
 
-                }
-            } else {
-                try {
-                    Client client = ClientBuilder.newClient();
-
-                    WebTarget webTarget = client.target("http://localhost:8084/HomeService");
-
-                    WebTarget pathdWebTarget = webTarget.path("sensor");
-                    WebTarget pathdWebTargetQuery = pathdWebTarget.queryParam("sensorId", this.fila.poll());
-
-                    Invocation.Builder invocationBuilder
-                            = pathdWebTargetQuery.request(MediaType.APPLICATION_JSON_TYPE);
-
-                    Response response = invocationBuilder.get();
-
-                    String resp = response.readEntity(String.class);
-
-                    ObjectMapper mapper = new ObjectMapper();
-
-                    SensorAnswer sa;
-
-                    sa = mapper.readValue(resp, SensorAnswer.class);
-
-                    System.out.println(sa.getValue());
-
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-
-            }
-        }
+                }          
+         }
 
     }
 
