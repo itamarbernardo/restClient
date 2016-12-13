@@ -1,6 +1,9 @@
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -27,11 +30,11 @@ public class ProtocoloDeEnvio extends Thread {
 
 //    private int valorEnvio = 0;
     private List<Integer> pedidos;
-    
+
     public ProtocoloDeEnvio(List<Integer> pedidos) {
         this.pedidos = new ArrayList<>();
         this.pedidos = pedidos;
-        
+
     }
 
     @Override
@@ -42,48 +45,37 @@ public class ProtocoloDeEnvio extends Thread {
     public void enviaPedidos() {
 
         while (true) {
-           
-                for (Integer p : pedidos) {
+
+            for (Integer p : pedidos) {
+                try {
+                    AcessoRest ac = new AcessoRest();
+                    String mensagem = ac.exemploGet("http://192.168.0.104:8084/TestHome/webresources//sensor?sensorId==" + p);
+
+                    Gson g = new Gson();
+                    SensorAnswer sa = new SensorAnswer();
+                    Type modelo = new TypeToken<SensorAnswer>() {
+                    }.getType();
+
+                    sa = g.fromJson(mensagem, modelo);
+                    
+                    if (sa.getValue() == 666) {
+                        //Lança notificação para o usuário que a casa está pegando fogo
+                        System.out.println("Tá pegando fogo");
+                    } else if (sa.getValue() == 999) {
+                        //Lança notificação para o usuário que está faltando comida
+                        System.out.println("O rango tá pouco");
+                    }
                     try {
-                        Client client = ClientBuilder.newClient();
-
-                        WebTarget webTarget = client.target("http://localhost:8084/HomeService");
-
-                        WebTarget pathdWebTarget = webTarget.path("sensor");
-                        WebTarget pathdWebTargetQuery = pathdWebTarget.queryParam("sensorId", p);
-
-                        Invocation.Builder invocationBuilder
-                                = pathdWebTargetQuery.request(MediaType.APPLICATION_JSON_TYPE);
-
-                        Response response = invocationBuilder.get();
-
-                        String resp = response.readEntity(String.class);
-
-                        ObjectMapper mapper = new ObjectMapper();
-
-                        SensorAnswer sa;
-
-                        sa = mapper.readValue(resp, SensorAnswer.class);
-                        System.out.println(sa.getValue());
-
-                        if (sa.getValue() == 666) {
-                            //Lança notificação para o usuário que a casa está pegando fogo
-                            System.out.println("Tá pegando fogo");
-                        } else if (sa.getValue() == 999) {
-                            //Lança notificação para o usuário que está faltando comida
-                            System.out.println("O rango tá pouco");
-                        }
-                        try {
-                            Thread.sleep(500);
-                        } catch (InterruptedException ex) {
-                            ex.printStackTrace();
-                        }
-                    } catch (IOException ex) {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
                         ex.printStackTrace();
                     }
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
 
-                }          
-         }
+            }
+        }
 
     }
 

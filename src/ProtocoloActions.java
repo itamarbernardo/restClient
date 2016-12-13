@@ -1,6 +1,9 @@
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -9,6 +12,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import static javax.ws.rs.client.Entity.json;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -56,40 +60,29 @@ public class ProtocoloActions extends Thread {
             if (this.fila.size() != 0) {
                 //System.out.println("Inseriu elemento");
                 try {
-                    Client client = ClientBuilder.newClient();
 
-                    WebTarget webTarget = client.target("http://localhost:8084/HomeService");
-//System.out.println("1");
-                    WebTarget pathdWebTarget = webTarget.path("sensor");
-                    WebTarget pathdWebTargetQuery = pathdWebTarget.queryParam("sensorId", this.fila.poll());
-//System.out.println("2");
-                    Invocation.Builder invocationBuilder
-                            = pathdWebTargetQuery.request(MediaType.APPLICATION_JSON_TYPE);
-//System.out.println("3");
-                    Response response = invocationBuilder.get();
+                    AcessoRest ac = new AcessoRest();
+                    String mensagem = ac.exemploGet("http://192.168.0.104:8084/TestHome/webresources//sensor?sensorId==" + this.fila.poll());
+                    
+                    Gson g = new Gson();
+                    SensorAnswer s = new SensorAnswer();
+                    Type modelo = new TypeToken<SensorAnswer>() {
+                    }.getType();
 
-                    String resp = response.readEntity(String.class);
-//System.out.println("4");
-                    ObjectMapper mapper = new ObjectMapper();
-
-                    SensorAnswer sa;
-
-                    sa = mapper.readValue(resp, SensorAnswer.class);
-
-                    System.out.println(sa.getValue());
-
+                    s = g.fromJson(mensagem, modelo);
+                    //Esses não precisa mostrar, por enquanto!
+                    
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
 
-            }
-            else{
+            } else {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                
+
             }
         }
 
